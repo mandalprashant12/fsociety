@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Modern Task Manager Design System - Purple/Black/White Theme */
+
+@layer base {
+  :root {
+    /* Dark theme base colors */
+    --background: 224 15% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 224 15% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 15% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Purple primary palette */
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --primary-glow: 262 83% 70%;
+
+    /* Subtle secondary */
+    --secondary: 224 15% 15%;
+    --secondary-foreground: 210 40% 85%;
+
+    --muted: 224 15% 12%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 262 50% 25%;
+    --accent-foreground: 262 83% 85%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 224 15% 18%;
+    --input: 224 15% 15%;
+    --ring: 262 83% 58%;
+
+    --radius: 0.75rem;
+
+    /* Custom design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--card)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.2);
+    --shadow-soft: 0 4px 20px -4px hsl(224 15% 0% / 0.3);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Task categories */
+    --category-work: 220 100% 60%;
+    --category-personal: 262 83% 58%;
+    --category-meeting: 340 80% 60%;
+    --category-urgent: 0 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
