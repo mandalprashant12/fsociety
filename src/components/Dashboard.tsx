@@ -11,6 +11,7 @@ import TaskCard from './TaskCard';
 // import CalendarView from './CalendarView';
 import MeetingCard from './MeetingCard';
 import TaskModal from './TaskModal';
+import GoogleCalendarIntegration from './GoogleCalendarIntegration';
 import { Task, Meeting, CalendarView as ViewType } from '@/types/task';
 
 interface DashboardProps {
@@ -25,7 +26,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onJoinMeeting }) => {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'calendar' | 'meetings'>('tasks');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'calendar' | 'meetings' | 'integrations'>('tasks');
   const [calendarView, setCalendarView] = useState<ViewType>('week');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -321,7 +322,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onJoinMeeting }) 
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border-slate-700">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-700">
             <TabsTrigger value="tasks" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               Tasks
             </TabsTrigger>
@@ -330,6 +331,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onJoinMeeting }) 
             </TabsTrigger>
             <TabsTrigger value="meetings" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               Meetings
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+              Integrations
             </TabsTrigger>
           </TabsList>
 
@@ -413,6 +417,44 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onJoinMeeting }) 
                   <MeetingCard meeting={meeting} />
                 </motion.div>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="space-y-6">
+            <div className="grid gap-6">
+              <GoogleCalendarIntegration userId={user?.id} />
+              
+              {/* Future integrations can be added here */}
+              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white">More Integrations Coming Soon</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    We're working on adding more calendar and productivity integrations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+                      <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">Outlook Calendar</p>
+                        <p className="text-xs text-slate-400">Coming soon</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+                      <div className="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-white">Apple Calendar</p>
+                        <p className="text-xs text-slate-400">Coming soon</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>

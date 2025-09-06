@@ -6,7 +6,10 @@ import {
   getMe,
   logout,
   updateProfile,
-  changePassword
+  changePassword,
+  getGoogleAuthUrl,
+  handleGoogleCallback,
+  verifyGoogleToken
 } from '../controllers/authController';
 import { authenticateToken } from '../middleware/auth';
 
@@ -16,6 +19,11 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/refresh', refreshToken);
+
+// Google OAuth routes
+router.get('/google/url', getGoogleAuthUrl);
+router.post('/google/callback', handleGoogleCallback);
+router.post('/google/verify', verifyGoogleToken);
 
 // Protected routes
 router.get('/me', authenticateToken, getMe);
