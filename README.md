@@ -1,73 +1,294 @@
-# Welcome to your Lovable project
+# 🟣 Task Manager + Calendar + Scheduling Web App
 
-## Project info
+A modern, full-stack web application that combines task management, calendar functionality, and meeting scheduling with Cal.com-inspired features. Built with React, TypeScript, Node.js, and MongoDB.
 
-**URL**: https://lovable.dev/projects/84b95fc7-f8b7-497a-aecc-3fb3414c6078
+## ✨ Features
 
-## How can I edit this code?
+### 🎯 Core Features
 
-There are several ways of editing your application.
+- **Task Management**
+  - Create, edit, delete, and organize tasks with deadlines
+  - Categories/labels (Work, Personal, Meetings, etc.)
+  - Search, filter, and sort tasks
+  - Priority levels and status tracking
+  - Time estimation and tracking
 
-**Use Lovable**
+- **Calendar Interface**
+  - Google Calendar-style daily, weekly, and monthly views
+  - Add events/meetings with start & end times
+  - Drag-and-drop functionality (planned)
+  - Reminder notifications
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/84b95fc7-f8b7-497a-aecc-3fb3414c6078) and start prompting.
+- **Meeting Management**
+  - Create and manage meetings
+  - Jitsi integration for video calls
+  - Meeting notes and agenda
+  - Attendee management
+  - Default settings (mic muted, camera off)
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎯 Cal.com-Inspired Features
 
-**Use your preferred IDE**
+- **Booking Pages**
+  - Public booking links (`/book/:username`)
+  - Multiple meeting types (15-min, 30-min, custom)
+  - Custom fields and settings
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Availability Management**
+  - Set working hours and availability
+  - Buffer times between meetings
+  - Timezone handling
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Team Scheduling**
+  - Round-robin scheduling
+  - Collective availability
+  - Team member management
 
-Follow these steps:
+### 🔔 Notifications & Integrations
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **Real-time Notifications**
+  - Web Push API support
+  - Socket.io for real-time updates
+  - Email reminders
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Calendar Integrations**
+  - Google Calendar sync
+  - Outlook integration
+  - Webhook support for Slack/Notion
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 🎨 UI/UX
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+- **Modern Dark Theme**
+  - Purple, black, and white color palette
+  - Gradient backgrounds
+  - Smooth animations with Framer Motion
+  - Responsive design
+
+- **Dashboard**
+  - Task overview and statistics
+  - Upcoming meetings
+  - Productivity metrics
+  - Weekly summaries
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development
+- **Tailwind CSS** for styling
+- **Framer Motion** for animations
+- **Radix UI** components
+- **React Hook Form** for forms
+- **React Query** for data fetching
+- **Date-fns** for date manipulation
+
+### Backend
+- **Node.js** with Express
+- **TypeScript** for type safety
+- **MongoDB** with Mongoose
+- **JWT** authentication
+- **Socket.io** for real-time features
+- **Passport.js** for OAuth
+- **Web Push API** for notifications
+- **Node-cron** for scheduled tasks
+
+### External Services
+- **Jitsi Meet** for video conferencing
+- **MongoDB Atlas** for database hosting
+- **Cloudinary** for file uploads
+- **OpenAI API** for AI features (planned)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- MongoDB (local or Atlas)
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd fsociety
+   ```
+
+2. **Install frontend dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Install backend dependencies**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   # Backend
+   cd backend
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
+
+5. **Start the development servers**
+
+   **Frontend (Terminal 1):**
+   ```bash
+   npm run dev
+   ```
+
+   **Backend (Terminal 2):**
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+6. **Open your browser**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+
+## 📁 Project Structure
+
+```
+fsociety/
+├── src/                          # Frontend source
+│   ├── components/               # React components
+│   │   ├── ui/                  # Reusable UI components
+│   │   ├── Dashboard.tsx        # Main dashboard
+│   │   ├── TaskCard.tsx         # Task display component
+│   │   ├── TaskModal.tsx        # Task creation/editing
+│   │   ├── CalendarView.tsx     # Calendar interface
+│   │   └── MeetingCard.tsx      # Meeting display
+│   ├── pages/                   # Page components
+│   ├── types/                   # TypeScript type definitions
+│   ├── hooks/                   # Custom React hooks
+│   ├── lib/                     # Utility functions
+│   └── data/                    # Mock data
+├── backend/                     # Backend source
+│   ├── src/
+│   │   ├── controllers/         # Route controllers
+│   │   ├── models/              # MongoDB models
+│   │   ├── routes/              # API routes
+│   │   ├── middleware/          # Express middleware
+│   │   ├── services/            # Business logic
+│   │   └── config/              # Configuration
+│   └── package.json
+└── README.md
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Backend Environment Variables
 
-**Use GitHub Codespaces**
+Create a `.env` file in the `backend` directory:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
 
-## What technologies are used for this project?
+# Database
+MONGODB_URI=mongodb://localhost:27017/task-manager
 
-This project is built with:
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRE=7d
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# OAuth (Optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-## How can I deploy this project?
+# Email (Optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
 
-Simply open [Lovable](https://lovable.dev/projects/84b95fc7-f8b7-497a-aecc-3fb3414c6078) and click on Share -> Publish.
+# Web Push (Optional)
+VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
 
-## Can I connect a custom domain to my Lovable project?
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+```
 
-Yes, you can!
+## 📱 API Endpoints
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/refresh` - Refresh token
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - User logout
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Tasks
+- `GET /api/tasks` - Get all tasks
+- `POST /api/tasks` - Create task
+- `GET /api/tasks/:id` - Get single task
+- `PUT /api/tasks/:id` - Update task
+- `DELETE /api/tasks/:id` - Delete task
+- `PATCH /api/tasks/:id/toggle` - Toggle task status
+
+### Meetings
+- `GET /api/meetings` - Get all meetings
+- `POST /api/meetings` - Create meeting
+- `GET /api/meetings/:id` - Get single meeting
+- `PUT /api/meetings/:id` - Update meeting
+- `DELETE /api/meetings/:id` - Delete meeting
+- `POST /api/meetings/:id/join` - Join meeting
+
+## 🎨 UI Components
+
+The app uses a modern dark theme with purple accents:
+
+- **Primary Colors**: Purple (#8B5CF6), Black (#0F172A), White (#FFFFFF)
+- **Background**: Gradient from slate-900 to purple-900
+- **Cards**: Semi-transparent with backdrop blur
+- **Animations**: Smooth transitions with Framer Motion
+
+## 🔮 Planned Features
+
+- [ ] Drag-and-drop for tasks and events
+- [ ] AI-powered meeting summaries
+- [ ] Advanced analytics and reporting
+- [ ] Mobile app (React Native)
+- [ ] Team collaboration features
+- [ ] Advanced scheduling algorithms
+- [ ] Integration with more calendar providers
+- [ ] File attachments for tasks
+- [ ] Time tracking
+- [ ] Project management features
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Radix UI](https://www.radix-ui.com/) for accessible components
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [Framer Motion](https://www.framer.com/motion/) for animations
+- [Cal.com](https://cal.com/) for inspiration on scheduling features
+- [Jitsi](https://jitsi.org/) for video conferencing
+
+## 📞 Support
+
+If you have any questions or need help, please:
+
+1. Check the [Issues](https://github.com/your-repo/issues) page
+2. Create a new issue with detailed information
+3. Contact the development team
+
+---
+
+**Built with ❤️ using modern web technologies**
