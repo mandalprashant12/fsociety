@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import MeetingRoom from "./components/MeetingRoom";
 import NotFound from "./pages/NotFound";
+import GoogleLogin from "./components/GoogleLogin";
+import { authService } from "./services/authService";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,10 @@ const App = () => {
     }
     setIsLoading(false);
   }, []);
+
+  const handleGoogleLoginSuccess = (userData: any) => {
+    setUser(userData);
+  };
 
   const handleLogin = (userData: any) => {
     setUser(userData);
@@ -96,6 +102,20 @@ const App = () => {
                 <h2 className="text-xl font-semibold text-white mb-6 text-center">Welcome Back</h2>
                 
                 <div className="space-y-4">
+                  <GoogleLogin
+                    onSuccess={handleGoogleLoginSuccess}
+                    className="w-full"
+                  />
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-slate-600" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-slate-800 px-2 text-slate-400">Or</span>
+                    </div>
+                  </div>
+                  
                   <button
                     onClick={() => {
                       // Mock login for demo purposes
@@ -116,7 +136,7 @@ const App = () => {
                   
                   <div className="text-center">
                     <p className="text-slate-400 text-sm">
-                      This is a demo application. Click above to continue.
+                      Sign in with Google for full features, or continue as demo user.
                     </p>
                   </div>
                 </div>

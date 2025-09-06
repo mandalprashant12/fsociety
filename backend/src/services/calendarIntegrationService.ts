@@ -1,9 +1,323 @@
 import axios from 'axios';
+import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 import { CalendarIntegration } from '../models/CalendarIntegration';
 import { Meeting } from '../models/Meeting';
 import { Task } from '../models/Task';
 
 export class CalendarIntegrationService {
+  private static oauth2Client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${process.env.FRONTEND_URL || 'http://localhost:8080'}/auth/google/callback`
+  );
+
+  // @desc    Get Google OAuth URL
+  // @route   GET /api/integrations/google/auth-url
+  // @access  Private
+  static getGoogleAuthUrl(): string {
+    const scopes = [
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ];
+
+    return this.oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      prompt: 'consent'
+    });
+  }
+
+  // @desc    Handle Google OAuth callback
+  // @route   POST /api/integrations/google/callback
+  // @access  Private
+  static async handleGoogleCallback(code: string, userId: string) {
+    try {
+      const { tokens } = await this.oauth2Client.getToken(code);
+      this.oauth2Client.setCredentials(tokens);
+
+      // Get user info
+      const oauth2 = google.oauth2({ version: 'v2', auth: this.oauth2Client });
+      const userInfo = await oauth2.userinfo.get();
+
+      // Get calendar list
+      const calendar = google.calendar({ version: 'v3', auth: this.oauth2Client });
+      const calendarList = await calendar.calendarList.list();
+
+      // Find primary calendar
+      const primaryCalendar = calendarList.data.items?.find(cal => cal.primary) || calendarList.data.items?.[0];
+
+      if (!primaryCalendar?.id) {
+        throw new Error('No calendar found');
+      }
+
+      // Save or update integration
+      const integration = await CalendarIntegration.findOneAndUpdate(
+        { userId, provider: 'google' },
+        {
+          userId,
+          provider: 'google',
+          accessToken: tokens.access_token!,
+          refreshToken: tokens.refresh_token!,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : undefined,
+          calendarId: primaryCalendar.id,
+          isActive: true,
+          lastSyncAt: new Date(),
+          userEmail: userInfo.data.email,
+          userName: userInfo.data.name
+        },
+        { upsert: true, new: true }
+      );
+
+      return {
+        success: true,
+        message: 'Google Calendar connected successfully',
+        integration
+      };
+    } catch (error) {
+      console.error('Error handling Google callback:', error);
+      throw error;
+    }
+  }
+
+  // @desc    Disconnect Google Calendar
+  // @route   DELETE /api/integrations/google/disconnect
+  // @access  Private
+  static async disconnectGoogleCalendar(userId: string) {
+    try {
+      await CalendarIntegration.findOneAndUpdate(
+        { userId, provider: 'google' },
+        { isActive: false }
+      );
+
+      return {
+        success: true,
+        message: 'Google Calendar disconnected successfully'
+      };
+    } catch (error) {
+      console.error('Error disconnecting Google Calendar:', error);
+      throw error;
+    }
+  }
+
+  // @desc    Get Google Calendar events
+  // @route   GET /api/integrations/google/events
+  // @access  Private
+  static async getGoogleEvents(userId: string, timeMin?: string, timeMax?: string) {
+    try {
+      const integration = await CalendarIntegration.findOne({
+        userId,
+        provider: 'google',
+        isActive: true
+      });
+
+      if (!integration) {
+        throw new Error('Google Calendar integration not found');
+      }
+
+      // Refresh token if needed
+      const refreshedIntegration = await this.refreshGoogleToken(integration);
+
+      const oauth2Client = new OAuth2Client();
+      oauth2Client.setCredentials({
+        access_token: refreshedIntegration.accessToken,
+        refresh_token: refreshedIntegration.refreshToken
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+      const response = await calendar.events.list({
+        calendarId: integration.calendarId,
+        timeMin: timeMin ? new Date(timeMin).toISOString() : new Date().toISOString(),
+        timeMax: timeMax ? new Date(timeMax).toISOString() : undefined,
+        maxResults: 100,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+
+      return {
+        success: true,
+        events: response.data.items || []
+      };
+    } catch (error) {
+      console.error('Error fetching Google events:', error);
+      throw error;
+    }
+  }
+
+  // @desc    Create Google Calendar event
+  // @route   POST /api/integrations/google/events
+  // @access  Private
+  static async createGoogleEvent(userId: string, eventData: any) {
+    try {
+      const integration = await CalendarIntegration.findOne({
+        userId,
+        provider: 'google',
+        isActive: true
+      });
+
+      if (!integration) {
+        throw new Error('Google Calendar integration not found');
+      }
+
+      const refreshedIntegration = await this.refreshGoogleToken(integration);
+
+      const oauth2Client = new OAuth2Client();
+      oauth2Client.setCredentials({
+        access_token: refreshedIntegration.accessToken,
+        refresh_token: refreshedIntegration.refreshToken
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+      const event = {
+        summary: eventData.title,
+        description: eventData.description || '',
+        start: {
+          dateTime: eventData.startTime,
+          timeZone: eventData.timeZone || 'UTC'
+        },
+        end: {
+          dateTime: eventData.endTime,
+          timeZone: eventData.timeZone || 'UTC'
+        },
+        attendees: eventData.attendees?.map((attendee: any) => ({
+          email: attendee.email,
+          displayName: attendee.name
+        })) || [],
+        location: eventData.location || '',
+        reminders: {
+          useDefault: false,
+          overrides: eventData.reminders || [
+            { method: 'popup', minutes: 15 },
+            { method: 'popup', minutes: 60 }
+          ]
+        }
+      };
+
+      const response = await calendar.events.insert({
+        calendarId: integration.calendarId,
+        requestBody: event
+      });
+
+      return {
+        success: true,
+        event: response.data
+      };
+    } catch (error) {
+      console.error('Error creating Google event:', error);
+      throw error;
+    }
+  }
+
+  // @desc    Update Google Calendar event
+  // @route   PUT /api/integrations/google/events/:eventId
+  // @access  Private
+  static async updateGoogleEvent(userId: string, eventId: string, eventData: any) {
+    try {
+      const integration = await CalendarIntegration.findOne({
+        userId,
+        provider: 'google',
+        isActive: true
+      });
+
+      if (!integration) {
+        throw new Error('Google Calendar integration not found');
+      }
+
+      const refreshedIntegration = await this.refreshGoogleToken(integration);
+
+      const oauth2Client = new OAuth2Client();
+      oauth2Client.setCredentials({
+        access_token: refreshedIntegration.accessToken,
+        refresh_token: refreshedIntegration.refreshToken
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+      const event = {
+        summary: eventData.title,
+        description: eventData.description || '',
+        start: {
+          dateTime: eventData.startTime,
+          timeZone: eventData.timeZone || 'UTC'
+        },
+        end: {
+          dateTime: eventData.endTime,
+          timeZone: eventData.timeZone || 'UTC'
+        },
+        attendees: eventData.attendees?.map((attendee: any) => ({
+          email: attendee.email,
+          displayName: attendee.name
+        })) || [],
+        location: eventData.location || '',
+        reminders: {
+          useDefault: false,
+          overrides: eventData.reminders || [
+            { method: 'popup', minutes: 15 },
+            { method: 'popup', minutes: 60 }
+          ]
+        }
+      };
+
+      const response = await calendar.events.update({
+        calendarId: integration.calendarId,
+        eventId: eventId,
+        requestBody: event
+      });
+
+      return {
+        success: true,
+        event: response.data
+      };
+    } catch (error) {
+      console.error('Error updating Google event:', error);
+      throw error;
+    }
+  }
+
+  // @desc    Delete Google Calendar event
+  // @route   DELETE /api/integrations/google/events/:eventId
+  // @access  Private
+  static async deleteGoogleEvent(userId: string, eventId: string) {
+    try {
+      const integration = await CalendarIntegration.findOne({
+        userId,
+        provider: 'google',
+        isActive: true
+      });
+
+      if (!integration) {
+        throw new Error('Google Calendar integration not found');
+      }
+
+      const refreshedIntegration = await this.refreshGoogleToken(integration);
+
+      const oauth2Client = new OAuth2Client();
+      oauth2Client.setCredentials({
+        access_token: refreshedIntegration.accessToken,
+        refresh_token: refreshedIntegration.refreshToken
+      });
+
+      const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+      await calendar.events.delete({
+        calendarId: integration.calendarId,
+        eventId: eventId
+      });
+
+      return {
+        success: true,
+        message: 'Event deleted successfully'
+      };
+    } catch (error) {
+      console.error('Error deleting Google event:', error);
+      throw error;
+    }
+  }
+
   static async syncWithGoogleCalendar(userId: string) {
     try {
       const integration = await CalendarIntegration.findOne({

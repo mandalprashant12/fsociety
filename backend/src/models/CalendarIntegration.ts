@@ -9,6 +9,8 @@ export interface ICalendarIntegration extends Document {
   calendarId: string;
   isActive: boolean;
   lastSyncAt?: Date;
+  userEmail?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +46,12 @@ const CalendarIntegrationSchema = new Schema<ICalendarIntegration>({
   },
   lastSyncAt: {
     type: Date
+  },
+  userEmail: {
+    type: String
+  },
+  userName: {
+    type: String
   }
 }, {
   timestamps: true
